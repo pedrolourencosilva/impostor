@@ -2,7 +2,7 @@ import { Redirect, router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useGame } from "@/game/GameContext";
-import { Button, Icon, Screen } from "@/ui/kit";
+import { Button, confirmDestructive, Icon, Screen, TopBar } from "@/ui/kit";
 import { spacing, type, useColors } from "@/ui/theme";
 
 export default function Discuss() {
@@ -11,8 +11,19 @@ export default function Discuss() {
 
   if (!round) return <Redirect href="/" />;
 
+  async function endRound() {
+    const ok = await confirmDestructive({
+      title: t.endRoundTitle,
+      message: t.endRoundMessage,
+      confirm: t.endRound,
+      cancel: t.cancel,
+    });
+    if (ok) router.dismissAll();
+  }
+
   return (
     <Screen footer={<Button label={t.reveal} onPress={() => router.replace("/result")} />}>
+      <TopBar onClose={endRound} closeLabel={t.endRound} />
       <View style={styles.center}>
         <Icon name="bubble.left.and.bubble.right.fill" fallback="💬" size={52} color={c.tintText} />
         <Text style={[type.title2, styles.centerText, { color: c.secondary, fontWeight: "400" }]}>{t.everyoneSaw}</Text>

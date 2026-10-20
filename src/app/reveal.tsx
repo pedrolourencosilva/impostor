@@ -3,7 +3,7 @@ import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useGame } from "@/game/GameContext";
-import { Button, Icon, Screen } from "@/ui/kit";
+import { Button, confirmDestructive, Icon, Screen, TopBar } from "@/ui/kit";
 import { spacing, type, useColors } from "@/ui/theme";
 
 // Passar o telemóvel: cada jogador, à vez, vê a sua palavra e esconde-a.
@@ -14,6 +14,16 @@ export default function Reveal() {
   const [shown, setShown] = useState(false);
 
   if (!round) return <Redirect href="/" />;
+
+  async function endRound() {
+    const ok = await confirmDestructive({
+      title: t.endRoundTitle,
+      message: t.endRoundMessage,
+      confirm: t.endRound,
+      cancel: t.cancel,
+    });
+    if (ok) router.dismissAll();
+  }
 
   const role = round.roles[index];
   const isLast = index === round.roles.length - 1;
@@ -30,9 +40,7 @@ export default function Reveal() {
   if (!shown) {
     return (
       <Screen footer={<Button label={t.tapToSee} onPress={() => setShown(true)} />}>
-        <Text style={[type.footnote, styles.progress, { color: c.secondary }]}>
-          {t.revealProgress(index + 1, round.roles.length)}
-        </Text>
+        <TopBar title={t.revealProgress(index + 1, round.roles.length)} onClose={endRound} closeLabel={t.endRound} />
         <View style={styles.center}>
           <Icon name="hand.raised.fill" fallback="✋" size={56} color={c.tintText} />
           <Text style={[type.title2, styles.centerText, { color: c.secondary, fontWeight: "400" }]}>{t.passTo}</Text>
@@ -49,7 +57,7 @@ export default function Reveal() {
 
   return (
     <Screen footer={<Button label={isLast ? t.hideAndStart : t.hideAndPass} variant="bordered" onPress={hide} />}>
-      <Text style={[type.footnote, styles.progress, { color: c.secondary }]}>{role.player}</Text>
+      <TopBar title={role.player} onClose={endRound} closeLabel={t.endRound} />
       <View style={styles.center}>
         <View style={[styles.card, { backgroundColor: c.card }]}>
           {seesWord ? (
@@ -84,7 +92,6 @@ export default function Reveal() {
 }
 
 const styles = StyleSheet.create({
-  progress: { textAlign: "center", marginTop: spacing.sm },
   center: { flex: 1, justifyContent: "center", alignItems: "center", gap: spacing.md },
   centerText: { textAlign: "center" },
   name: { fontSize: 44, fontWeight: "800", textAlign: "center", letterSpacing: 0.3 },

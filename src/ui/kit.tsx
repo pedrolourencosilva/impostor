@@ -1,6 +1,7 @@
 import { SymbolView, type SFSymbol } from "expo-symbols";
 import { Children, Fragment, type ReactNode } from "react";
 import {
+  Alert,
   Platform,
   Pressable,
   ScrollView,
@@ -244,7 +245,51 @@ export function Stepper({ value, min, max, onChange, label }: StepperProps) {
   );
 }
 
+type ConfirmOptions = {
+  title: string;
+  message: string;
+  confirm: string; // ação destrutiva, a vermelho
+  cancel: string;
+};
+
+// Pergunta antes de uma ação que não se desfaz, com Cancelar
+// (alerts.md). Na web o Alert do React Native não faz nada: usa o do browser.
+export function confirmDestructive({ title, message, confirm, cancel }: ConfirmOptions): Promise<boolean> {
+  if (Platform.OS === "web") return Promise.resolve(window.confirm(`${title}\n\n${message}`));
+  return new Promise((resolve) =>
+    Alert.alert(title, message, [
+      { text: cancel, style: "cancel", onPress: () => resolve(false) },
+      { text: confirm, style: "destructive", onPress: () => resolve(true) },
+    ]),
+  );
+}
+
+type TopBarProps = {
+  title?: string;
+  onClose: () => void;
+  closeLabel: string;
+};
+
+// Barra de cima durante a ronda: ✕ para sair à esquerda, título ao centro.
+export function TopBar({ title, onClose, closeLabel }: TopBarProps) {
+  const c = useColors();
+  return (
+    <View style={styles.topBar}>
+      <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={closeLabel} hitSlop={8} style={styles.topBarButton}>
+        <Icon name="xmark" fallback="✕" size={18} color={c.secondary} />
+      </Pressable>
+      <Text style={[type.footnote, styles.topBarTitle, { color: c.secondary }]} numberOfLines={1}>
+        {title}
+      </Text>
+      <View style={styles.topBarButton} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  topBar: { flexDirection: "row", alignItems: "center", minHeight: 44 },
+  topBarButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
+  topBarTitle: { flex: 1, textAlign: "center" },
   screen: { flex: 1 },
   fill: { flex: 1 },
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.md },

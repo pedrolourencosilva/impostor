@@ -49,6 +49,10 @@ export type Strings = {
   languageNote: string;
   back: string;
   revealProgress: (current: number, total: number) => string;
+  endRound: string;
+  endRoundTitle: string;
+  endRoundMessage: string;
+  cancel: string;
 };
 
 const pt: Strings = {
@@ -123,6 +127,10 @@ const pt: Strings = {
   languageNote: "As palavras e a interface mudam com a língua.",
   back: "Voltar",
   revealProgress: (current, total) => `${current} de ${total}`,
+  endRound: "Terminar ronda",
+  endRoundTitle: "Terminar a ronda?",
+  endRoundMessage: "Voltas à configuração e esta ronda perde-se.",
+  cancel: "Cancelar",
 };
 
 const en: Strings = {
@@ -197,6 +205,10 @@ const en: Strings = {
   languageNote: "The words and the interface follow the language.",
   back: "Back",
   revealProgress: (current, total) => `${current} of ${total}`,
+  endRound: "End round",
+  endRoundTitle: "End this round?",
+  endRoundMessage: "You'll go back to the setup and this round will be lost.",
+  cancel: "Cancel",
 };
 
 export const STRINGS: Record<Lang, Strings> = { pt, en };
