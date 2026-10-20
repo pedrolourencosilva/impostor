@@ -1,6 +1,6 @@
 import { Redirect, router } from "expo-router";
-import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { AppState, StyleSheet, Text, View } from "react-native";
 
 import { useGame } from "@/game/GameContext";
 import * as haptics from "@/ui/haptics";
@@ -13,6 +13,15 @@ export default function Reveal() {
   const c = useColors();
   const [index, setIndex] = useState(0);
   const [shown, setShown] = useState(false);
+
+  // Se a app for para segundo plano com a palavra à vista, esconde-a: ao
+  // voltar, quem pegar no telemóvel não a vê sem tocar em "ver".
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state !== "active") setShown(false);
+    });
+    return () => sub.remove();
+  }, []);
 
   if (!round) return <Redirect href="/" />;
 
