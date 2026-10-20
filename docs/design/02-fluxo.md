@@ -45,7 +45,8 @@ Configurar ──► Ver a palavra (passa por todos) ──► Discussão ◄─
 
 - **Discussão**: quem começa é sorteado entre os jogadores ainda em jogo
   (pode ser um infiltrado, como no Undercover).
-- **Adivinhar**: passa-se o telemóvel ao impostor expulso, ele escreve. A app
+- **Adivinhar**: no próprio ecrã que diz "Carla era impostor" (não há ecrã
+  à parte); passa-se-lhe o telemóvel e ele escreve. A app
   ignora maiúsculas, acentos e um erro de escrita, e diz só "Acertou" ou
   "Falhou", **sem mostrar a palavra** (um Undercover ainda em jogo não a
   pode ver).
