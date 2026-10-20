@@ -25,8 +25,8 @@ export default function Setup() {
   const maxImp = maxImpostors(players.length);
 
   function submitName() {
-    const next = addPlayer(players, name);
-    if (next) updateSettings({ players: next });
+    const result = addPlayer(players, name);
+    if (result.ok) updateSettings({ players: result.players });
     setName("");
   }
 

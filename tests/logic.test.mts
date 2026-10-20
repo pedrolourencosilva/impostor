@@ -23,10 +23,12 @@ test("os impostores são sempre minoria", () => {
   assert.equal(clampImpostors(0, 6), 1);
 });
 
-test("addPlayer recusa nomes vazios e repetidos", () => {
-  assert.deepEqual(addPlayer([], "  Ana   Maria "), ["Ana Maria"]);
-  assert.equal(addPlayer(["Ana"], "ana"), null);
-  assert.equal(addPlayer(["Ana"], "   "), null);
+test("addPlayer recusa nomes vazios e repetidos e diz porquê", () => {
+  assert.deepEqual(addPlayer([], "  Ana   Maria "), { ok: true, players: ["Ana Maria"] });
+  assert.deepEqual(addPlayer(["Ana"], "ana"), { ok: false, reason: "duplicate" });
+  assert.deepEqual(addPlayer(["Ana"], "   "), { ok: false, reason: "empty" });
+  const full = Array.from({ length: 20 }, (_, i) => `J${i}`);
+  assert.deepEqual(addPlayer(full, "Zé"), { ok: false, reason: "full" });
 });
 
 test("cada modo dá ao impostor o que deve", () => {

@@ -19,13 +19,20 @@ export function normalizeName(name: string): string {
   return name.trim().replace(/\s+/g, " ").slice(0, MAX_NAME_LENGTH);
 }
 
-// Devolve a lista com o nome acrescentado, ou null se for vazio, repetido
-// (sem distinguir maiúsculas) ou se já houver jogadores a mais.
-export function addPlayer(players: string[], rawName: string): string[] | null {
+export type AddPlayerResult =
+  | { ok: true; players: string[] }
+  | { ok: false; reason: "empty" | "duplicate" | "full" };
+
+// Acrescenta o nome, ou diz porque não dá: vazio, repetido (sem distinguir
+// maiúsculas) ou já há jogadores a mais. O ecrã mostra o motivo ao jogador.
+export function addPlayer(players: string[], rawName: string): AddPlayerResult {
   const name = normalizeName(rawName);
-  if (!name || players.length >= MAX_PLAYERS) return null;
-  if (players.some((p) => p.toLowerCase() === name.toLowerCase())) return null;
-  return [...players, name];
+  if (!name) return { ok: false, reason: "empty" };
+  if (players.length >= MAX_PLAYERS) return { ok: false, reason: "full" };
+  if (players.some((p) => p.toLowerCase() === name.toLowerCase())) {
+    return { ok: false, reason: "duplicate" };
+  }
+  return { ok: true, players: [...players, name] };
 }
 
 export function shuffle<T>(items: readonly T[], random: Random = Math.random): T[] {
