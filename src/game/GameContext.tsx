@@ -5,13 +5,23 @@ import { STRINGS, type Strings } from "@/i18n/strings";
 import { WORDS } from "@/words";
 
 import { clampImpostors, createRound } from "./logic";
-import type { Category, Round, Settings } from "./types";
+import type { Category, Lang, Round, Settings } from "./types";
 
 const STORAGE_KEY = "impostor:settings";
 
+// Na primeira vez, a língua vem do telemóvel (entering-data.md: "Get
+// information from the system whenever possible"); depois fica a escolhida.
+function deviceLang(): Lang {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().locale.toLowerCase().startsWith("pt") ? "pt" : "en";
+  } catch {
+    return "pt";
+  }
+}
+
 const DEFAULT_SETTINGS: Settings = {
   players: [],
-  lang: "pt",
+  lang: deviceLang(),
   mode: "classic",
   impostors: 1,
   categories: [],
