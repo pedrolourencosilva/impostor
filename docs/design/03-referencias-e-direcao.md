@@ -45,3 +45,21 @@ tarot a virar. Capturas em `referencias/`.
 - A letra decorativa nunca na palavra (lê-se em 3 segundos): só em títulos.
 - Frente clara é ideia dele: se for, creme/papel e não branco puro (à noite
   o branco encandeia). Comparar clara vs escura no passo 5.
+
+## Passo 5: direção escolhida (2026-10-20)
+
+Três direções do ecrã da palavra em
+https://claude.ai/artifact/GG1Sqry6wCFixdY2AHNmEs — A · Ouro, B ·
+Constelação, C · Essencial. **Escolhida: A · Ouro.**
+
+- Fundo quase preto com brilho quente ao centro (#0B0A08 → #1E1810),
+  estrelas douradas soltas.
+- Dourado #D9A441 para linha fina, símbolos e o botão principal (texto
+  #14110C por cima).
+- Verso da carta: duas molduras finas, círculos, raios, olho com estrela,
+  luas em cima e em baixo, estrelas de 4 pontas nos cantos.
+- Frente da carta: creme #EFE6D2 (não branco), molduras douradas
+  (#B8862F), palavra em Fraunces 600 #1A1712, rótulos em Cinzel com
+  espaçamento largo #6B5A3E.
+- Letras: Cinzel (rótulos e títulos curtos), Fraunces (palavras e nomes),
+  Inter (texto corrido e botões).
