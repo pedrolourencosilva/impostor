@@ -1,6 +1,7 @@
 import { Redirect, router } from "expo-router";
 import { useEffect, useState } from "react";
 import { AppState, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 import { useGame } from "@/game/GameContext";
 import * as haptics from "@/ui/haptics";
@@ -57,13 +58,13 @@ export default function Reveal() {
           }}
         />}>
         <TopBar title={t.revealProgress(index + 1, round.roles.length)} onClose={endRound} closeLabel={t.endRound} />
-        <View style={styles.center}>
+        <Animated.View key={index} entering={FadeIn.duration(250)} style={styles.center}>
           <Icon name="hand.raised.fill" fallback="✋" size={56} color={c.tintText} />
           <Text style={[type.title2, styles.centerText, { color: c.secondary, fontWeight: "400" }]}>{t.passTo}</Text>
           <Text style={[styles.name, { color: c.label }]} numberOfLines={2} adjustsFontSizeToFit>
             {role.player}
           </Text>
-        </View>
+        </Animated.View>
       </Screen>
     );
   }
@@ -75,7 +76,7 @@ export default function Reveal() {
     <Screen footer={<Button label={isLast ? t.hideAndStart : t.hideAndPass} variant="bordered" onPress={hide} />}>
       <TopBar title={role.player} onClose={endRound} closeLabel={t.endRound} />
       <View style={styles.center}>
-        <View style={[styles.card, { backgroundColor: c.card }]}>
+        <Animated.View entering={FadeIn.duration(200)} style={[styles.card, { backgroundColor: c.card }]}>
           {seesWord ? (
             <>
               <Text style={[type.subhead, { color: c.secondary }]}>{t.yourWord}</Text>
@@ -101,7 +102,7 @@ export default function Reveal() {
               <Text style={[type.subhead, styles.centerText, { color: c.secondary }]}>{t.impostorTip[round.mode]}</Text>
             </>
           )}
-        </View>
+        </Animated.View>
       </View>
     </Screen>
   );
