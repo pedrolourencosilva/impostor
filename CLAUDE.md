@@ -53,22 +53,25 @@ src/ui/           theme.ts (cores, gradientes, letra), kit.tsx (Screen, Txt,
 tests/            logic.test.mts: node --test, sem bibliotecas
 ```
 
-## Regras do jogo já decididas (2026-10-20)
+## Regras do jogo
 
-- **Três modos, todos na 1.ª versão:**
-  - `classic`: o impostor só vê "És o impostor".
-  - `hint`: o impostor sabe que é impostor e recebe uma pista. **A pista é a
-    outra palavra do par** (decisão minha, por confirmar com ele).
-  - `undercover`: o impostor recebe a outra palavra do par e não sabe que é
-    impostor.
-- Um par serve os três modos; a ordem é sorteada em cada ronda.
-- Impostores: 1 até `floor((n-1)/2)` (sempre minoria). Mínimo 3 jogadores,
-  máximo 20, nomes únicos (sem distinguir maiúsculas), até 20 caracteres.
-- Quem começa a falar é sorteado entre **todos** (pode calhar o impostor).
+**Mudaram a 2026-10-20 (noite)**: ver `docs/design/02-fluxo.md`, que é a
+fonte. Resumo: papéis misturáveis (civil, Undercover, impostor sem palavra),
+expulsão por rondas como no Undercover, o impostor expulso tenta adivinhar a
+palavra a escrever, cartões iguais para todos. **O código ainda segue as
+regras antigas** (um modo por jogo, só "Revelar" no fim) até ser reescrito.
+
+Continuam a valer:
+
+- Impostores sempre minoria. Mínimo 3 jogadores, máximo 20, nomes únicos
+  (sem distinguir maiúsculas), até 20 caracteres.
+- Quem começa a falar é sorteado entre **todos** (pode calhar um
+  infiltrado): é o que fazem as regras oficiais do Undercover.
 - Pares não se repetem na mesma sessão até se esgotarem.
 - **Uma língua por jogo**, e a interface segue a língua das palavras.
-- 1.ª versão = **passar o telemóvel**, sem servidor. Salas online ficam
-  para depois.
+- **Passar o telemóvel**, sem servidor. Salas online ficam para depois.
+- Pista do impostor: por decidir (quer um meio-termo entre a outra palavra e
+  a categoria; trios de palavras ficaram para depois).
 
 ## Interface (2026-10-20)
 
