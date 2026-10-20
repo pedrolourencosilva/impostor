@@ -41,13 +41,15 @@ não ser a primeira. Uso real à frente dele conta mais do que originalidade.
 ## Estrutura
 
 ```text
-src/app/          ecrãs (expo-router): index (configuração) → reveal (passar
-                  o telemóvel) → discuss (quem começa) → result (revelação)
+src/app/          ecrãs (expo-router): index (configuração, com categories
+                  à parte) → reveal (passar o telemóvel) → discuss (quem
+                  começa) → result (revelação)
 src/game/         types.ts, logic.ts (funções puras, testadas),
                   GameContext.tsx (estado + AsyncStorage)
 src/words/        pt.ts, en.ts: pares por categoria, um ficheiro por língua
 src/i18n/         strings.ts: textos da interface em PT e EN
-src/ui/           theme.ts, components.tsx (Screen, Button, Chip, SectionTitle)
+src/ui/           theme.ts (cores claro/escuro estilo iOS, useColors, type),
+                  kit.tsx (Screen, Section, Row, Button, Segmented, Stepper, Icon)
 tests/            logic.test.mts: node --test, sem bibliotecas
 ```
 
@@ -67,6 +69,17 @@ tests/            logic.test.mts: node --test, sem bibliotecas
 - **Uma língua por jogo**, e a interface segue a língua das palavras.
 - 1.ª versão = **passar o telemóvel**, sem servidor. Salas online ficam
   para depois.
+
+## Interface (2026-10-20)
+
+- **Estilo iOS**, pedido dele: listas agrupadas como nos Ajustes, botão
+  principal em cápsula fixo no fundo, claro e escuro a seguir o telemóvel.
+  Cor de destaque índigo (`tint` em `theme.ts`), vermelho só para o impostor.
+- Regra dele: avisar quando uma sugestão quebra uma regra de interface, com
+  a regra e a razão. Rever com a skill `apple-design` (HIG da Apple).
+- Ícones: SF Symbols no iOS (`expo-symbols`); na web e Android aparece o
+  `fallback` de texto de cada `Icon`.
+- Design no canvas: https://claude.ai/artifact/XfQKeywJj8c2yegCYdjBgz
 
 ## Palavras
 
@@ -97,3 +110,7 @@ npx expo lint
   Os testes ficam em `.mts` e com `--disable-warning=MODULE_TYPELESS_PACKAGE_JSON`
   para não encher o ecrã de avisos.
 - `npx expo lint` da primeira vez instala o ESLint e falha; à segunda corre.
+- Web com `"output": "single"` no `app.json`: com `"server"` havia aviso de
+  hidratação no modo escuro (o servidor desenha em claro).
+- O remote `origin` é HTTPS com o `gh` como credential helper (config local
+  do repo): o push por SSH falha nas sessões do Claude (chave sem agente).
