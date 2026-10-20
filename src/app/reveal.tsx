@@ -3,6 +3,7 @@ import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useGame } from "@/game/GameContext";
+import * as haptics from "@/ui/haptics";
 import { Button, confirmDestructive, Icon, Screen, TopBar } from "@/ui/kit";
 import { spacing, type, useColors } from "@/ui/theme";
 
@@ -39,7 +40,13 @@ export default function Reveal() {
 
   if (!shown) {
     return (
-      <Screen footer={<Button label={t.tapToSee} onPress={() => setShown(true)} />}>
+      <Screen footer={<Button
+          label={t.tapToSee}
+          onPress={() => {
+            haptics.tap();
+            setShown(true);
+          }}
+        />}>
         <TopBar title={t.revealProgress(index + 1, round.roles.length)} onClose={endRound} closeLabel={t.endRound} />
         <View style={styles.center}>
           <Icon name="hand.raised.fill" fallback="✋" size={56} color={c.tintText} />

@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useGame } from "@/game/GameContext";
+import * as haptics from "@/ui/haptics";
 import { Icon, Row, Screen, Section } from "@/ui/kit";
 import { type, useColors } from "@/ui/theme";
 
@@ -13,6 +14,7 @@ export default function Categories() {
   const { categories } = settings;
 
   function toggle(id: string) {
+    haptics.selection();
     updateSettings({
       categories: categories.includes(id) ? categories.filter((x) => x !== id) : [...categories, id],
     });
@@ -23,7 +25,10 @@ export default function Categories() {
       <Stack.Screen options={{ title: t.categories, headerBackTitle: t.back }} />
 
       <Section footer={t.categoriesNote}>
-        <Row role="radio" selected={categories.length === 0} onPress={() => updateSettings({ categories: [] })}>
+        <Row role="radio" selected={categories.length === 0} onPress={() => {
+            haptics.selection();
+            updateSettings({ categories: [] });
+          }}>
           <Text style={[type.body, styles.grow, { color: c.label }]}>{t.allCategories}</Text>
           <Check visible={categories.length === 0} color={c.tintText} />
         </Row>

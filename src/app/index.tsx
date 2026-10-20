@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useGame } from "@/game/GameContext";
 import { addPlayer, MAX_NAME_LENGTH, MAX_PLAYERS, maxImpostors, MIN_PLAYERS } from "@/game/logic";
 import type { Lang, Mode } from "@/game/types";
+import * as haptics from "@/ui/haptics";
 import { Button, Icon, LargeTitle, Row, Screen, Section, SectionFooter, Segmented, Stepper } from "@/ui/kit";
 import { spacing, type, useColors } from "@/ui/theme";
 
@@ -160,7 +161,10 @@ export default function Setup() {
               key={m}
               role="radio"
               selected={selected}
-              onPress={() => updateSettings({ mode: m })}
+              onPress={() => {
+                if (!selected) haptics.selection();
+                updateSettings({ mode: m });
+              }}
               accessibilityLabel={`${t.modes[m].name}. ${t.modes[m].description}`}
             >
               <View style={styles.grow}>

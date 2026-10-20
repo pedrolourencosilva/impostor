@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import * as haptics from "./haptics";
 import { spacing, type, useColors } from "./theme";
 
 // Componentes ao estilo do iOS: listas agrupadas como nos Ajustes, botões em
@@ -194,7 +195,10 @@ export function Segmented<T extends string>({ options, value, onChange, accessib
         return (
           <Pressable
             key={o.value}
-            onPress={() => onChange(o.value)}
+            onPress={() => {
+              if (!selected) haptics.selection();
+              onChange(o.value);
+            }}
             accessibilityRole="radio"
             accessibilityState={{ selected, checked: selected }}
             style={[styles.segment, selected && [styles.segmentSelected, { backgroundColor: c.fillSelected }]]}
@@ -221,6 +225,10 @@ export function Stepper({ value, min, max, onChange, label }: StepperProps) {
   const c = useColors();
   const canDec = value > min;
   const canInc = value < max;
+  function change(next: number) {
+    haptics.selection();
+    onChange(next);
+  }
   return (
     <View
       accessible
@@ -229,16 +237,16 @@ export function Stepper({ value, min, max, onChange, label }: StepperProps) {
       accessibilityValue={{ min, max, now: value }}
       accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
       onAccessibilityAction={(e) => {
-        if (e.nativeEvent.actionName === "increment" && canInc) onChange(value + 1);
-        if (e.nativeEvent.actionName === "decrement" && canDec) onChange(value - 1);
+        if (e.nativeEvent.actionName === "increment" && canInc) change(value + 1);
+        if (e.nativeEvent.actionName === "decrement" && canDec) change(value - 1);
       }}
       style={[styles.stepper, { backgroundColor: c.fill }]}
     >
-      <Pressable onPress={() => canDec && onChange(value - 1)} style={[styles.stepperHalf, !canDec && styles.disabled]}>
+      <Pressable onPress={() => canDec && change(value - 1)} style={[styles.stepperHalf, !canDec && styles.disabled]}>
         <Text style={[styles.stepperGlyph, { color: c.label }]}>−</Text>
       </Pressable>
       <View style={[styles.stepperDivider, { backgroundColor: c.separator }]} />
-      <Pressable onPress={() => canInc && onChange(value + 1)} style={[styles.stepperHalf, !canInc && styles.disabled]}>
+      <Pressable onPress={() => canInc && change(value + 1)} style={[styles.stepperHalf, !canInc && styles.disabled]}>
         <Text style={[styles.stepperGlyph, { color: c.label }]}>+</Text>
       </Pressable>
     </View>
