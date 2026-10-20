@@ -41,15 +41,15 @@ não ser a primeira. Uso real à frente dele conta mais do que originalidade.
 ## Estrutura
 
 ```text
-src/app/          ecrãs (expo-router): index (configuração, com categories
-                  à parte) → reveal (passar o telemóvel) → discuss (quem
-                  começa) → result (revelação)
+src/app/          ecrãs (expo-router): index (capa + configuração), players
+                  (folha), categories → reveal (passar o telemóvel) →
+                  discuss (quem começa) → result (revelação)
 src/game/         types.ts, logic.ts (funções puras, testadas),
                   GameContext.tsx (estado + AsyncStorage)
 src/words/        pt.ts, en.ts: pares por categoria, um ficheiro por língua
 src/i18n/         strings.ts: textos da interface em PT e EN
-src/ui/           theme.ts (cores claro/escuro estilo iOS, useColors, type),
-                  kit.tsx (Screen, Section, Row, Button, Segmented, Stepper, Icon)
+src/ui/           theme.ts (cores, gradientes, letra), kit.tsx (Screen, Txt,
+                  Icon, Group, Row, Button, Avatar...), categories.ts (ícones)
 tests/            logic.test.mts: node --test, sem bibliotecas
 ```
 
@@ -72,13 +72,17 @@ tests/            logic.test.mts: node --test, sem bibliotecas
 
 ## Interface (2026-10-20)
 
-- **Estilo iOS**, pedido dele: listas agrupadas como nos Ajustes, botão
-  principal em cápsula fixo no fundo, claro e escuro a seguir o telemóvel.
-  Cor de destaque índigo (`tint` em `theme.ts`), vermelho só para o impostor.
+- **Estilo Apple Arcade / Game Center** (escolha dele a 2026-10-20, depois
+  de achar a 1.ª versão iOS "de iniciante"): sempre escuro, capa com
+  gradiente, avatares redondos, carrossel de modos, botão em cápsula branca
+  numa barra de vidro. Não basta cumprir as HIG: tem de parecer da Apple.
 - Regra dele: avisar quando uma sugestão quebra uma regra de interface, com
   a regra e a razão. Rever com a skill `apple-design` (HIG da Apple).
-- Ícones: SF Symbols no iOS (`expo-symbols`); na web e Android aparece o
-  `fallback` de texto de cada `Icon`.
+- Ícones: SF Symbols no iOS, Ionicons fora (tabela `ICONS` em `kit.tsx`).
+  Letra: SF Pro no iPhone, Inter na web (sem SF fora do Mac, a web parecia
+  Arial). Ele vê no PC pela web: avaliar sempre também a versão web.
+- Capturas para verificar: Brave headless com `--remote-debugging-port`
+  e um script CDP (o `--screenshot` direto fica pendurado).
 - Design no canvas: https://claude.ai/artifact/XfQKeywJj8c2yegCYdjBgz
 
 ## Palavras
