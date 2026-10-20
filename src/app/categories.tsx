@@ -1,16 +1,16 @@
 import { Stack } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import { useGame } from "@/game/GameContext";
+import { categoryStyle } from "@/ui/categories";
 import * as haptics from "@/ui/haptics";
-import { Icon, Row, Screen, Section } from "@/ui/kit";
-import { type, useColors } from "@/ui/theme";
+import { Group, Icon, Row, RowIcon, Screen, Txt } from "@/ui/kit";
+import { colors, spacing } from "@/ui/theme";
 
 // Escolher as categorias: uma lista com ✓, como as listas de escolha dos
 // Ajustes do iPhone. Nenhuma escolhida = todas.
 export default function Categories() {
   const { settings, updateSettings, words, t } = useGame();
-  const c = useColors();
   const { categories } = settings;
 
   function toggle(id: string) {
@@ -21,40 +21,51 @@ export default function Categories() {
   }
 
   return (
-    <Screen scroll>
+    <Screen scroll top={false}>
       <Stack.Screen options={{ title: t.categories, headerBackTitle: t.back }} />
 
-      <Section footer={t.categoriesNote}>
-        <Row role="radio" selected={categories.length === 0} onPress={() => {
+      <Group style={styles.first} footer={t.categoriesNote}>
+        <Row
+          role="radio"
+          selected={categories.length === 0}
+          onPress={() => {
             haptics.selection();
             updateSettings({ categories: [] });
-          }}>
-          <Text style={[type.body, styles.grow, { color: c.label }]}>{t.allCategories}</Text>
-          <Check visible={categories.length === 0} color={c.tintText} />
+          }}
+        >
+          <RowIcon name="grid" color="#636366" />
+          <Txt style={styles.grow}>{t.allCategories}</Txt>
+          <Check visible={categories.length === 0} />
         </Row>
-      </Section>
+      </Group>
 
-      <Section>
+      <Group style={styles.list}>
         {words.map((w) => {
           const selected = categories.includes(w.id);
+          const { icon, color } = categoryStyle(w.id);
           return (
             <Row key={w.id} role="checkbox" selected={selected} onPress={() => toggle(w.id)}>
-              <Text style={[type.body, styles.grow, { color: c.label }]}>{w.name}</Text>
-              <Text style={[type.subhead, { color: c.secondary }]}>{t.pairCount(w.pairs.length)}</Text>
-              <Check visible={selected} color={c.tintText} />
+              <RowIcon name={icon} color={color} />
+              <Txt style={styles.grow}>{w.name}</Txt>
+              <Txt variant="subhead" color={colors.secondary}>
+                {t.pairCount(w.pairs.length)}
+              </Txt>
+              <Check visible={selected} />
             </Row>
           );
         })}
-      </Section>
+      </Group>
     </Screen>
   );
 }
 
-function Check({ visible, color }: { visible: boolean; color: string }) {
-  return <View style={styles.check}>{visible && <Icon name="checkmark" fallback="✓" size={20} color={color} />}</View>;
+function Check({ visible }: { visible: boolean }) {
+  return <View style={styles.check}>{visible && <Icon name="checkmark" size={18} color={colors.link} />}</View>;
 }
 
 const styles = StyleSheet.create({
+  first: { marginTop: spacing.md },
+  list: { marginTop: spacing.lg },
   grow: { flex: 1, minWidth: 0 },
-  check: { width: 22, alignItems: "center" },
+  check: { width: 20, alignItems: "center" },
 });

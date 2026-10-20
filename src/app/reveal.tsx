@@ -1,22 +1,22 @@
 import { Redirect, router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useState } from "react";
-import { AppState, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
+import { AppState, StyleSheet, View } from "react-native";
+import Animated, { FadeIn, ZoomIn } from "react-native-reanimated";
 
 import { useGame } from "@/game/GameContext";
 import * as haptics from "@/ui/haptics";
-import { Button, confirmDestructive, Icon, Screen, TopBar } from "@/ui/kit";
-import { spacing, type, useColors } from "@/ui/theme";
+import { Avatar, Backdrop, Button, confirmDestructive, Icon, MARGIN, Screen, TopBar, Txt } from "@/ui/kit";
+import { avatarGradient, colors, gradients, spacing } from "@/ui/theme";
 
 // Passar o telemóvel: cada jogador, à vez, vê a sua palavra e esconde-a.
 export default function Reveal() {
   const { round, t } = useGame();
-  const c = useColors();
   const [index, setIndex] = useState(0);
   const [shown, setShown] = useState(false);
 
   // Se a app for para segundo plano com a palavra à vista, esconde-a: ao
-  // voltar, quem pegar no telemóvel não a vê sem tocar em "ver".
+  // voltar, quem pegar no telemóvel não a vê sem tocar em "mostrar".
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => {
       if (state !== "active") setShown(false);
@@ -38,6 +38,7 @@ export default function Reveal() {
 
   const role = round.roles[index];
   const isLast = index === round.roles.length - 1;
+  const progress = t.revealProgress(index + 1, round.roles.length);
 
   function hide() {
     if (isLast) {
@@ -49,21 +50,32 @@ export default function Reveal() {
   }
 
   if (!shown) {
+    const tint = avatarGradient(role.player)[1];
     return (
-      <Screen footer={<Button
-          label={t.tapToSee}
-          onPress={() => {
-            haptics.tap();
-            setShown(true);
-          }}
-        />}>
-        <TopBar title={t.revealProgress(index + 1, round.roles.length)} onClose={endRound} closeLabel={t.endRound} />
+      <Screen
+        backdrop={<Backdrop gradient={[`${tint}66`, `${tint}14`, colors.background]} height={560} />}
+        footer={
+          <Button
+            label={t.tapToSee}
+            icon="eye"
+            onPress={() => {
+              haptics.tap();
+              setShown(true);
+            }}
+          />
+        }
+      >
+        <TopBar title={progress} onClose={endRound} closeLabel={t.endRound} />
         <Animated.View key={index} entering={FadeIn.duration(250)} style={styles.center}>
-          <Icon name="hand.raised.fill" fallback="✋" size={56} color={c.tintText} />
-          <Text style={[type.title2, styles.centerText, { color: c.secondary, fontWeight: "400" }]}>{t.passTo}</Text>
-          <Text style={[styles.name, { color: c.label }]} numberOfLines={2} adjustsFontSizeToFit>
+          <View style={[styles.avatarRing, { borderColor: `${tint}88` }]}>
+            <Avatar name={role.player} size={128} />
+          </View>
+          <Txt variant="caption" color={colors.secondary} align="center">
+            {t.passTo}
+          </Txt>
+          <Txt variant="display" align="center" numberOfLines={2} adjustsFontSizeToFit>
             {role.player}
-          </Text>
+          </Txt>
         </Animated.View>
       </Screen>
     );
@@ -73,53 +85,82 @@ export default function Reveal() {
   const seesWord = role.word !== null;
 
   return (
-    <Screen footer={<Button label={isLast ? t.hideAndStart : t.hideAndPass} variant="bordered" onPress={hide} />}>
+    <Screen footer={<Button label={isLast ? t.hideAndStart : t.hideAndPass} icon="eyeSlash" variant="secondary" onPress={hide} />}>
       <TopBar title={role.player} onClose={endRound} closeLabel={t.endRound} />
-      <View style={styles.center}>
-        <Animated.View entering={FadeIn.duration(200)} style={[styles.card, { backgroundColor: c.card }]}>
+      <Animated.View entering={ZoomIn.duration(220)} style={styles.cardWrap}>
+        <LinearGradient
+          colors={seesWord ? gradients.word : gradients.impostor}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0.4, y: 1 }}
+          style={styles.card}
+        >
           {seesWord ? (
             <>
-              <Text style={[type.subhead, { color: c.secondary }]}>{t.yourWord}</Text>
-              <Text style={[styles.word, { color: c.label }]} adjustsFontSizeToFit numberOfLines={2}>
-                {role.word}
-              </Text>
+              <Txt variant="caption" color="rgba(255,255,255,0.75)">
+                {t.wordCaption}
+              </Txt>
+              <View style={styles.cardCenter}>
+                <Txt variant="display" align="center" style={styles.word} numberOfLines={2} adjustsFontSizeToFit>
+                  {role.word}
+                </Txt>
+              </View>
               {round.mode === "undercover" && (
-                <Text style={[type.subhead, styles.centerText, { color: c.secondary }]}>{t.civilTip}</Text>
+                <Txt variant="subhead" color="rgba(255,255,255,0.85)" align="center">
+                  {t.civilTip}
+                </Txt>
               )}
             </>
           ) : (
             <>
-              <Icon name="theatermasks.fill" fallback="🎭" size={48} color={c.danger} />
-              <Text style={[styles.word, { color: c.danger }]} adjustsFontSizeToFit numberOfLines={2}>
-                {t.youAreImpostor}
-              </Text>
-              {role.hint && (
-                <View style={styles.hint}>
-                  <Text style={[type.subhead, { color: c.secondary }]}>{t.yourHint}</Text>
-                  <Text style={[type.title2, styles.centerText, { color: c.label }]}>{role.hint}</Text>
+              <View style={styles.cardCenter}>
+                <View style={styles.masks}>
+                  <Icon name="masks" size={44} color="#FFFFFF" />
                 </View>
-              )}
-              <Text style={[type.subhead, styles.centerText, { color: c.secondary }]}>{t.impostorTip[round.mode]}</Text>
+                <Txt variant="largeTitle" align="center" numberOfLines={2} adjustsFontSizeToFit>
+                  {t.youAreImpostor}
+                </Txt>
+                {role.hint && (
+                  <View style={styles.hint}>
+                    <Txt variant="caption" color="rgba(255,255,255,0.75)" align="center">
+                      {t.yourHint}
+                    </Txt>
+                    <Txt variant="title2" align="center">
+                      {role.hint}
+                    </Txt>
+                  </View>
+                )}
+              </View>
+              <Txt variant="subhead" color="rgba(255,255,255,0.85)" align="center">
+                {t.impostorTip[round.mode]}
+              </Txt>
             </>
           )}
-        </Animated.View>
-      </View>
+        </LinearGradient>
+      </Animated.View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: spacing.md },
-  centerText: { textAlign: "center" },
-  name: { fontSize: 44, fontWeight: "800", textAlign: "center", letterSpacing: 0.3 },
-  card: {
-    alignSelf: "stretch",
+  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: spacing.md, paddingHorizontal: MARGIN },
+  avatarRing: { padding: 6, borderRadius: 80, borderWidth: 2, marginBottom: spacing.md },
+  cardWrap: { flex: 1, paddingHorizontal: MARGIN, paddingTop: spacing.sm, paddingBottom: spacing.lg },
+  card: { flex: 1, borderRadius: 28, padding: spacing.lg, gap: spacing.md },
+  cardCenter: { flex: 1, justifyContent: "center", alignItems: "center", gap: spacing.md },
+  word: { fontSize: 52, lineHeight: 58 },
+  masks: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: "rgba(255,255,255,0.16)",
     alignItems: "center",
-    gap: spacing.md,
-    borderRadius: 22,
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.lg,
+    justifyContent: "center",
   },
-  word: { fontSize: 40, fontWeight: "800", textAlign: "center" },
-  hint: { alignItems: "center", gap: spacing.xs },
+  hint: {
+    alignSelf: "stretch",
+    gap: spacing.xs,
+    padding: spacing.md,
+    borderRadius: 16,
+    backgroundColor: "rgba(0,0,0,0.25)",
+  },
 });

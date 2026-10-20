@@ -53,6 +53,12 @@ export type Strings = {
   endRoundTitle: string;
   endRoundMessage: string;
   cancel: string;
+  tagline: string;
+  edit: string;
+  done: string;
+  noPlayers: (min: number) => string;
+  wordCaption: string;
+  howToPlay: string;
 };
 
 const pt: Strings = {
@@ -80,9 +86,9 @@ const pt: Strings = {
   impostors: "Impostores",
   categories: "Categorias",
   allCategories: "Todas",
-  start: "Começar",
+  start: "Jogar",
   passTo: "Passa o telemóvel a",
-  tapToSee: "Sou eu, ver",
+  tapToSee: "Sou eu, mostrar",
   hideAndPass: "Esconder e passar",
   hideAndStart: "Esconder e começar",
   yourWord: "A tua palavra é",
@@ -131,6 +137,12 @@ const pt: Strings = {
   endRoundTitle: "Terminar a ronda?",
   endRoundMessage: "Voltas à configuração e esta ronda perde-se.",
   cancel: "Cancelar",
+  tagline: "Um de vocês não sabe a palavra.",
+  edit: "Editar",
+  done: "OK",
+  noPlayers: (min) => `Junta pelo menos ${min} jogadores para começar.`,
+  wordCaption: "A tua palavra",
+  howToPlay: "Como se joga",
 };
 
 const en: Strings = {
@@ -158,7 +170,7 @@ const en: Strings = {
   impostors: "Impostors",
   categories: "Categories",
   allCategories: "All",
-  start: "Start",
+  start: "Play",
   passTo: "Pass the phone to",
   tapToSee: "It's me, show",
   hideAndPass: "Hide and pass",
@@ -209,6 +221,12 @@ const en: Strings = {
   endRoundTitle: "End this round?",
   endRoundMessage: "You'll go back to the setup and this round will be lost.",
   cancel: "Cancel",
+  tagline: "One of you doesn't know the word.",
+  edit: "Edit",
+  done: "Done",
+  noPlayers: (min) => `Add at least ${min} players to start.`,
+  wordCaption: "Your word",
+  howToPlay: "How to play",
 };
 
 export const STRINGS: Record<Lang, Strings> = { pt, en };

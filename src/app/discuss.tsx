@@ -1,13 +1,13 @@
 import { Redirect, router } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 import { useGame } from "@/game/GameContext";
-import { Button, confirmDestructive, Icon, Screen, TopBar } from "@/ui/kit";
-import { spacing, type, useColors } from "@/ui/theme";
+import { Avatar, Backdrop, Button, confirmDestructive, MARGIN, Screen, TopBar, Txt } from "@/ui/kit";
+import { colors, gradients, spacing } from "@/ui/theme";
 
 export default function Discuss() {
   const { round, t } = useGame();
-  const c = useColors();
 
   if (!round) return <Redirect href="/" />;
 
@@ -22,27 +22,40 @@ export default function Discuss() {
   }
 
   return (
-    <Screen footer={<Button label={t.reveal} onPress={() => router.replace("/result")} />}>
+    <Screen
+      backdrop={<Backdrop gradient={gradients.hero} height={520} />}
+      footer={<Button label={t.reveal} icon="eye" onPress={() => router.replace("/result")} />}
+    >
       <TopBar onClose={endRound} closeLabel={t.endRound} />
-      <View style={styles.center}>
-        <Icon name="bubble.left.and.bubble.right.fill" fallback="💬" size={52} color={c.tintText} />
-        <Text style={[type.title2, styles.centerText, { color: c.secondary, fontWeight: "400" }]}>{t.everyoneSaw}</Text>
-        <Text style={[styles.starter, { color: c.label }]} numberOfLines={2} adjustsFontSizeToFit>
+      <Animated.View entering={FadeIn.duration(250)} style={styles.center}>
+        <Txt variant="subhead" color={colors.secondary} align="center">
+          {t.everyoneSaw}
+        </Txt>
+        <Avatar name={round.starter} size={112} />
+        <Txt variant="largeTitle" align="center" numberOfLines={2} adjustsFontSizeToFit>
           {t.starts(round.starter)}
-        </Text>
-        <View style={[styles.card, { backgroundColor: c.card }]}>
-          <Text style={[type.body, styles.centerText, { color: c.secondary, lineHeight: 24 }]}>
-            {t.discussRules[round.mode]}
-          </Text>
-        </View>
+        </Txt>
+      </Animated.View>
+      <View style={styles.card}>
+        <Txt variant="caption" color={colors.secondary}>
+          {t.howToPlay}
+        </Txt>
+        <Txt variant="callout" color="rgba(255,255,255,0.85)">
+          {t.discussRules[round.mode]}
+        </Txt>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: spacing.md },
-  centerText: { textAlign: "center" },
-  starter: { fontSize: 38, fontWeight: "800", textAlign: "center" },
-  card: { alignSelf: "stretch", borderRadius: 22, padding: spacing.lg, marginTop: spacing.sm },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: spacing.md, paddingHorizontal: MARGIN },
+  card: {
+    marginHorizontal: MARGIN,
+    marginBottom: spacing.lg,
+    padding: spacing.lg - 4,
+    borderRadius: 20,
+    gap: spacing.sm,
+    backgroundColor: colors.card,
+  },
 });

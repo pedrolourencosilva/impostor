@@ -1,35 +1,45 @@
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useGame } from "@/game/GameContext";
-import { addPlayer, MAX_NAME_LENGTH, MAX_PLAYERS, maxImpostors, MIN_PLAYERS } from "@/game/logic";
+import { maxImpostors, MIN_PLAYERS } from "@/game/logic";
 import type { Lang, Mode } from "@/game/types";
 import * as haptics from "@/ui/haptics";
-import { Button, Icon, LargeTitle, Row, Screen, Section, SectionFooter, Segmented, Stepper } from "@/ui/kit";
-import { spacing, type, useColors } from "@/ui/theme";
+import {
+  Avatar,
+  Button,
+  Group,
+  Icon,
+  MARGIN,
+  Row,
+  RowIcon,
+  Screen,
+  SectionHeader,
+  Segmented,
+  Stepper,
+  Txt,
+  type IconName,
+} from "@/ui/kit";
+import { colors, gradients, spacing } from "@/ui/theme";
 
-const MODES: Mode[] = ["classic", "hint", "undercover"];
+const MODES: { id: Mode; icon: IconName }[] = [
+  { id: "classic", icon: "masks" },
+  { id: "hint", icon: "lightbulb" },
+  { id: "undercover", icon: "eyeSlash" },
+];
 const LANGS: { value: Lang; label: string }[] = [
   { value: "pt", label: "Português" },
   { value: "en", label: "English" },
 ];
 
-// Quanto tempo fica o "Desfazer" depois de remover um jogador.
-const UNDO_MS = 5000;
+const CARD_WIDTH = 248;
+const CARD_GAP = 12;
 
-export default function Setup() {
+export default function Home() {
   const { loaded, settings, updateSettings, words, t, newRound } = useGame();
-  const c = useColors();
-  const [name, setName] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [removed, setRemoved] = useState<{ name: string; index: number } | null>(null);
-
-  useEffect(() => {
-    if (!removed) return;
-    const timer = setTimeout(() => setRemoved(null), UNDO_MS);
-    return () => clearTimeout(timer);
-  }, [removed]);
+  const insets = useSafeAreaInsets();
 
   if (!loaded) return <Screen>{null}</Screen>;
 
@@ -37,33 +47,8 @@ export default function Setup() {
   const canStart = players.length >= MIN_PLAYERS;
   const maxImp = maxImpostors(players.length);
 
-  function submitName() {
-    const result = addPlayer(players, name);
-    if (result.ok) {
-      updateSettings({ players: result.players });
-      setName("");
-      setError(null);
-    } else if (result.reason === "duplicate") {
-      setError(t.nameDuplicate(name.trim()));
-    } else if (result.reason === "full") {
-      setError(t.nameFull(MAX_PLAYERS));
-    }
-  }
-
-  function removePlayer(index: number) {
-    setRemoved({ name: players[index], index });
-    updateSettings({ players: players.filter((_, i) => i !== index) });
-  }
-
-  function undoRemove() {
-    if (!removed) return;
-    const next = [...players];
-    next.splice(removed.index, 0, removed.name);
-    updateSettings({ players: next });
-    setRemoved(null);
-  }
-
   function start() {
+    haptics.tap();
     newRound();
     router.push("/reveal");
   }
@@ -75,116 +60,125 @@ export default function Setup() {
         ? (words.find((w) => w.id === categories[0])?.name ?? t.categoryCount(1))
         : t.categoryCount(categories.length);
 
-  const playersFooter = error ? (
-    <SectionFooter color={c.danger}>{error}</SectionFooter>
-  ) : !canStart ? (
-    <SectionFooter>{t.minPlayers(MIN_PLAYERS)}</SectionFooter>
-  ) : undefined;
-
   const footer = (
-    <>
-      {removed && (
-        <View accessibilityRole="alert" style={[styles.toast, { backgroundColor: c.card }]}>
-          <Text style={[type.subhead, styles.toastText, { color: c.label }]}>{t.playerLeft(removed.name)}</Text>
-          <Pressable onPress={undoRemove} accessibilityRole="button" style={styles.toastButton}>
-            <Text style={[type.headline, { color: c.tintText }]}>{t.undo}</Text>
-          </Pressable>
-        </View>
-      )}
-      <Button
-        label={t.start}
-        onPress={start}
-        disabled={!canStart}
-        accessibilityHint={canStart ? undefined : t.minPlayers(MIN_PLAYERS)}
-      />
-    </>
+    <Button
+      label={t.start}
+      icon="play"
+      onPress={start}
+      disabled={!canStart}
+      accessibilityHint={canStart ? undefined : t.noPlayers(MIN_PLAYERS)}
+    />
   );
 
   return (
-    <Screen scroll footer={footer}>
-      <LargeTitle>{t.appTitle}</LargeTitle>
+    <Screen scroll top={false} footer={footer}>
+      {/* Capa, como a de um jogo no Apple Arcade */}
+      <LinearGradient colors={gradients.hero} style={[styles.hero, { paddingTop: insets.top + spacing.xl }]}>
+        <View style={styles.heroArt} pointerEvents="none">
+          <Icon name="masks" size={220} color="rgba(255,255,255,0.07)" />
+        </View>
+        <View style={styles.heroBadge}>
+          <Icon name="masks" size={30} color="#FFFFFF" />
+        </View>
+        <Txt variant="display" accessibilityRole="header" style={styles.heroTitle}>
+          {t.appTitle}
+        </Txt>
+        <Txt variant="callout" color="rgba(255,255,255,0.75)">
+          {t.tagline}
+        </Txt>
+      </LinearGradient>
 
-      <Section title={`${t.players} · ${players.length}`} footer={playersFooter}>
-        {players.map((p, i) => (
-          <Row key={p} style={styles.playerRow}>
-            <Text style={[type.body, styles.grow, { color: c.label }]} numberOfLines={1}>
-              {p}
-            </Text>
-            <Pressable
-              onPress={() => removePlayer(i)}
-              accessibilityRole="button"
-              accessibilityLabel={t.removePlayer(p)}
-              hitSlop={4}
-              style={styles.iconButton}
-            >
-              <Icon name="xmark.circle.fill" fallback="✕" size={22} color={c.secondary} />
-            </Pressable>
-          </Row>
-        ))}
-        <Row style={styles.playerRow}>
-          <TextInput
-            value={name}
-            onChangeText={(text) => {
-              setName(text);
-              setError(null);
-            }}
-            onSubmitEditing={submitName}
-            placeholder={t.addPlayerPlaceholder}
-            placeholderTextColor={c.secondary}
-            accessibilityLabel={t.addPlayerPlaceholder}
-            maxLength={MAX_NAME_LENGTH}
-            returnKeyType="done"
-            submitBehavior="submit"
-            autoCapitalize="words"
-            autoCorrect={false}
-            clearButtonMode="while-editing"
-            style={[type.body, styles.grow, styles.input, { color: c.label }]}
-          />
+      <SectionHeader title={t.players} action={t.edit} onAction={() => router.push("/players")} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.avatars}>
+        <Pressable
+          onPress={() => router.push("/players")}
+          accessibilityRole="button"
+          accessibilityLabel={t.addPlayer}
+          style={styles.avatarItem}
+        >
+          <View style={styles.addCircle}>
+            <Icon name="plus" size={26} color={colors.link} />
+          </View>
+          <Txt variant="footnote" color={colors.link} numberOfLines={1}>
+            {t.add}
+          </Txt>
+        </Pressable>
+        {players.map((p) => (
           <Pressable
-            onPress={submitName}
-            disabled={!name.trim()}
+            key={p}
+            onPress={() => router.push("/players")}
             accessibilityRole="button"
-            accessibilityLabel={t.addPlayer}
-            accessibilityState={{ disabled: !name.trim() }}
-            style={[styles.iconButton, !name.trim() && styles.disabled]}
+            accessibilityLabel={p}
+            style={styles.avatarItem}
           >
-            <Icon name="plus.circle.fill" fallback="＋" size={26} color={c.tintText} />
+            <Avatar name={p} size={64} />
+            <Txt variant="footnote" color={colors.secondary} numberOfLines={1} style={styles.avatarName}>
+              {p}
+            </Txt>
           </Pressable>
-        </Row>
-      </Section>
+        ))}
+      </ScrollView>
+      {!canStart && (
+        <Txt variant="footnote" color={colors.secondary} style={styles.note}>
+          {t.noPlayers(MIN_PLAYERS)}
+        </Txt>
+      )}
 
-      <Section title={t.mode}>
-        {MODES.map((m) => {
-          const selected = mode === m;
+      <SectionHeader title={t.mode} />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={CARD_WIDTH + CARD_GAP}
+        decelerationRate="fast"
+        contentContainerStyle={styles.modes}
+        accessibilityRole="radiogroup"
+      >
+        {MODES.map(({ id, icon }) => {
+          const selected = mode === id;
           return (
-            <Row
-              key={m}
-              role="radio"
-              selected={selected}
+            <Pressable
+              key={id}
               onPress={() => {
                 if (!selected) haptics.selection();
-                updateSettings({ mode: m });
+                updateSettings({ mode: id });
               }}
-              accessibilityLabel={`${t.modes[m].name}. ${t.modes[m].description}`}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: selected }}
+              accessibilityLabel={`${t.modes[id].name}. ${t.modes[id].description}`}
+              style={({ pressed }) => [pressed && { transform: [{ scale: 0.98 }] }]}
             >
-              <View style={styles.grow}>
-                <Text style={[type.body, { color: c.label }]}>{t.modes[m].name}</Text>
-                <Text style={[type.subhead, styles.description, { color: c.secondary }]}>
-                  {t.modes[m].description}
-                </Text>
-              </View>
-              <View style={styles.check}>
-                {selected && <Icon name="checkmark" fallback="✓" size={20} color={c.tintText} />}
-              </View>
-            </Row>
+              <LinearGradient
+                colors={gradients[id]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0.6, y: 1 }}
+                style={[styles.modeCard, selected ? styles.modeSelected : styles.modeIdle]}
+              >
+                <View style={styles.modeTop}>
+                  <View style={styles.modeIcon}>
+                    <Icon name={icon} size={22} color="#FFFFFF" />
+                  </View>
+                  {selected && <Icon name="checkCircle" size={26} color="#FFFFFF" />}
+                </View>
+                <View>
+                  <Txt variant="title3">{t.modes[id].name}</Txt>
+                  <Txt variant="footnote" color="rgba(255,255,255,0.85)" numberOfLines={3}>
+                    {t.modes[id].description}
+                  </Txt>
+                </View>
+              </LinearGradient>
+            </Pressable>
           );
         })}
-      </Section>
+      </ScrollView>
 
-      <Section title={t.round} footer={canStart ? t.maxImpostorsNote(players.length, maxImp) : undefined}>
+      <SectionHeader title={t.round} />
+      <Group footer={canStart ? t.maxImpostorsNote(players.length, maxImp) : undefined}>
         <Row>
-          <Text style={[type.body, styles.grow, { color: c.label }]}>{t.impostors}</Text>
-          <Text style={[type.body, styles.value, { color: c.secondary }]}>{impostors}</Text>
+          <RowIcon name="person" color="#FF453A" />
+          <Txt style={styles.grow}>{t.impostors}</Txt>
+          <Txt variant="headline" style={styles.value}>
+            {impostors}
+          </Txt>
           <Stepper
             label={t.impostors}
             value={impostors}
@@ -193,16 +187,22 @@ export default function Setup() {
             onChange={(value) => updateSettings({ impostors: value })}
           />
         </Row>
-        <Row onPress={() => router.push("/categories")} role="link" accessibilityLabel={`${t.categories}: ${categoriesValue}`}>
-          <Text style={[type.body, styles.grow, { color: c.label }]}>{t.categories}</Text>
-          <Text style={[type.body, { color: c.secondary }]} numberOfLines={1}>
+        <Row
+          onPress={() => router.push("/categories")}
+          role="link"
+          accessibilityLabel={`${t.categories}: ${categoriesValue}`}
+        >
+          <RowIcon name="grid" color="#0A84FF" />
+          <Txt style={styles.grow}>{t.categories}</Txt>
+          <Txt color={colors.secondary} numberOfLines={1} style={styles.rowValue}>
             {categoriesValue}
-          </Text>
-          <Icon name="chevron.right" fallback="›" size={16} color={c.secondary} />
+          </Txt>
+          <Icon name="chevron" size={15} color={colors.tertiary} />
         </Row>
-      </Section>
+      </Group>
 
-      <Section title={t.language} footer={t.languageNote}>
+      <SectionHeader title={t.language} />
+      <Group footer={t.languageNote}>
         <Row>
           <View style={styles.grow}>
             <Segmented
@@ -213,27 +213,62 @@ export default function Setup() {
             />
           </View>
         </Row>
-      </Section>
+      </Group>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  grow: { flex: 1, minWidth: 0 },
-  playerRow: { paddingVertical: 0, paddingRight: 4 },
-  input: { minHeight: 44, paddingVertical: 0 },
-  iconButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  disabled: { opacity: 0.35 },
-  description: { marginTop: 2 },
-  check: { width: 22, alignItems: "center" },
-  value: { minWidth: 20, textAlign: "right", marginRight: spacing.xs },
-  toast: {
-    flexDirection: "row",
-    alignItems: "center",
+  hero: { paddingHorizontal: MARGIN, paddingBottom: spacing.xl, overflow: "hidden" },
+  heroArt: { position: "absolute", right: -40, bottom: -50, transform: [{ rotate: "-12deg" }] },
+  heroBadge: {
+    width: 56,
+    height: 56,
     borderRadius: 14,
-    paddingLeft: spacing.md,
-    minHeight: 48,
+    backgroundColor: "rgba(255,255,255,0.14)",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(255,255,255,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.md,
   },
-  toastText: { flex: 1 },
-  toastButton: { minHeight: 48, justifyContent: "center", paddingHorizontal: spacing.md },
+  heroTitle: { marginBottom: spacing.xs },
+  avatars: { paddingHorizontal: MARGIN, gap: spacing.md },
+  avatarItem: { width: 68, alignItems: "center", gap: 6 },
+  avatarName: { maxWidth: 68 },
+  addCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.card,
+    borderWidth: 1.5,
+    borderColor: colors.separator,
+    borderStyle: "dashed",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  note: { paddingHorizontal: MARGIN, marginTop: spacing.md },
+  modes: { paddingHorizontal: MARGIN, gap: CARD_GAP },
+  modeCard: {
+    width: CARD_WIDTH,
+    height: 168,
+    borderRadius: 20,
+    padding: spacing.md,
+    justifyContent: "space-between",
+    borderWidth: 2.5,
+  },
+  modeSelected: { borderColor: "#FFFFFF" },
+  modeIdle: { borderColor: "transparent", opacity: 0.85 },
+  modeTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  modeIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  grow: { flex: 1, minWidth: 0 },
+  value: { minWidth: 20, textAlign: "right" },
+  rowValue: { maxWidth: 150 },
 });

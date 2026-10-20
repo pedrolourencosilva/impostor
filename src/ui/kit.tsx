@@ -1,5 +1,8 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { SymbolView, type SFSymbol } from "expo-symbols";
-import { Children, Fragment, type ReactNode } from "react";
+import { Children, Fragment, useState, type ComponentProps, type ReactNode } from "react";
 import {
   Alert,
   Platform,
@@ -9,157 +12,220 @@ import {
   Text,
   View,
   type StyleProp,
+  type TextProps,
+  type TextStyle,
   type ViewStyle,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import * as haptics from "./haptics";
-import { spacing, type, useColors } from "./theme";
+import { avatarGradient, colors, spacing, type, type Gradient } from "./theme";
 
-// Componentes ao estilo do iOS: listas agrupadas como nos Ajustes, botões em
-// cápsula, controlo segmentado e stepper. Tudo com o papel e o estado certos
-// para o VoiceOver (accessibility.md › Vision).
+// Componentes ao estilo do Apple Arcade / Game Center, com o papel e o estado
+// certos para o VoiceOver (accessibility.md › Vision).
+
+export const MARGIN = 20;
+
+// ---------- Texto e ícones ----------
+
+type TxtProps = TextProps & {
+  variant?: keyof typeof type;
+  color?: string;
+  align?: TextStyle["textAlign"];
+};
+
+export function Txt({ variant = "body", color = colors.label, align, style, ...rest }: TxtProps) {
+  return <Text {...rest} style={[type[variant], { color, textAlign: align }, style]} />;
+}
+
+type IonName = ComponentProps<typeof Ionicons>["name"];
+
+// SF Symbols no iPhone; fora do iOS, o Ionicon equivalente (desenhado ao
+// estilo do iOS).
+const ICONS = {
+  play: ["play.fill", "play"],
+  eye: ["eye.fill", "eye"],
+  eyeSlash: ["eye.slash.fill", "eye-off"],
+  plus: ["plus", "add"],
+  close: ["xmark", "close"],
+  checkmark: ["checkmark", "checkmark"],
+  checkCircle: ["checkmark.circle.fill", "checkmark-circle"],
+  minusCircle: ["minus.circle.fill", "remove-circle"],
+  chevron: ["chevron.right", "chevron-forward"],
+  masks: ["theatermasks.fill", "glasses"],
+  chat: ["bubble.left.and.bubble.right.fill", "chatbubbles"],
+  people: ["person.3.fill", "people"],
+  person: ["person.fill.questionmark", "help-circle"],
+  lightbulb: ["lightbulb.fill", "bulb"],
+  globe: ["globe", "globe-outline"],
+  grid: ["square.grid.2x2.fill", "grid"],
+  refresh: ["arrow.clockwise", "refresh"],
+  sliders: ["slider.horizontal.3", "options"],
+  food: ["fork.knife", "restaurant"],
+  paw: ["pawprint.fill", "paw"],
+  map: ["map.fill", "map"],
+  briefcase: ["briefcase.fill", "briefcase"],
+  sports: ["sportscourt.fill", "football"],
+  house: ["house.fill", "home"],
+  car: ["car.fill", "car"],
+  leaf: ["leaf.fill", "leaf"],
+  film: ["film.fill", "film"],
+  shirt: ["tshirt.fill", "shirt"],
+  laptop: ["laptopcomputer", "laptop"],
+  school: ["graduationcap.fill", "school"],
+} satisfies Record<string, readonly [SFSymbol, IonName]>;
+
+export type IconName = keyof typeof ICONS;
+
+export function Icon({ name, size = 20, color = colors.label }: { name: IconName; size?: number; color?: string }) {
+  const [sf, ion] = ICONS[name];
+  const fallback = <Ionicons name={ion} size={size} color={color} />;
+  if (Platform.OS !== "ios") return fallback;
+  return <SymbolView name={sf} size={size} tintColor={color} fallback={fallback} style={{ width: size, height: size }} />;
+}
+
+// ---------- Ecrã ----------
 
 type ScreenProps = {
   children: ReactNode;
-  // Fica fixo no fundo, por cima do conteúdo que faz scroll: o botão
-  // principal está sempre à mão (designing-for-ios.md › Best practices).
+  // Barra de vidro fixa no fundo com o botão principal, sempre à mão
+  // (designing-for-ios.md › Best practices).
   footer?: ReactNode;
   scroll?: boolean;
+  // Fundo atrás de tudo (um gradiente), a ir até debaixo da barra de estado.
+  backdrop?: ReactNode;
+  top?: boolean; // deixar espaço para a barra de estado (falso quando há capa)
 };
 
-export function Screen({ children, footer, scroll = false }: ScreenProps) {
-  const c = useColors();
+export function Screen({ children, footer, scroll = false, backdrop, top = true }: ScreenProps) {
+  const insets = useSafeAreaInsets();
+  const [footerHeight, setFooterHeight] = useState(0);
+  const bottom = footer ? footerHeight : insets.bottom;
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor: c.background }]} edges={["top", "bottom"]}>
+    <View style={styles.screen}>
+      {backdrop}
       {scroll ? (
         <ScrollView
           style={styles.fill}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{ paddingTop: top ? insets.top : 0, paddingBottom: bottom + spacing.lg }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
           automaticallyAdjustKeyboardInsets
+          showsVerticalScrollIndicator={false}
         >
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.fill, styles.content]}>{children}</View>
+        <View style={[styles.fill, { paddingTop: top ? insets.top : 0, paddingBottom: bottom }]}>{children}</View>
       )}
-      {footer && <View style={styles.footer}>{footer}</View>}
-    </SafeAreaView>
-  );
-}
-
-export function LargeTitle({ children }: { children: ReactNode }) {
-  const c = useColors();
-  return (
-    <Text accessibilityRole="header" style={[type.largeTitle, styles.largeTitle, { color: c.label }]}>
-      {children}
-    </Text>
-  );
-}
-
-type SectionProps = {
-  title?: string;
-  footer?: ReactNode;
-  children: ReactNode;
-};
-
-// Uma secção de lista agrupada: título pequeno em cima, linhas num cartão
-// com separadores entre elas, nota opcional por baixo.
-export function Section({ title, footer, children }: SectionProps) {
-  const c = useColors();
-  const rows = Children.toArray(children).filter(Boolean);
-  return (
-    <View style={styles.section}>
-      {title && (
-        <Text accessibilityRole="header" style={[type.footnote, styles.sectionTitle, { color: c.secondary }]}>
-          {title.toUpperCase()}
-        </Text>
+      {footer && (
+        <View style={styles.footerWrap} onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}>
+          <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>{footer}</View>
+        </View>
       )}
-      <View style={[styles.card, { backgroundColor: c.card }]}>
-        {rows.map((row, i) => (
-          <Fragment key={i}>
-            {i > 0 && <View style={[styles.separator, { backgroundColor: c.separator }]} />}
-            {row}
-          </Fragment>
-        ))}
-      </View>
-      {typeof footer === "string" ? <SectionFooter>{footer}</SectionFooter> : footer}
     </View>
   );
 }
 
-export function SectionFooter({ children, color }: { children: ReactNode; color?: string }) {
-  const c = useColors();
-  return <Text style={[type.footnote, styles.sectionFooter, { color: color ?? c.secondary }]}>{children}</Text>;
+export function Backdrop({ gradient, height = 420 }: { gradient: Gradient; height?: number }) {
+  return <LinearGradient colors={gradient} style={[styles.backdrop, { height }]} pointerEvents="none" />;
+}
+
+// ---------- Secções e linhas ----------
+
+export function SectionHeader({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
+  return (
+    <View style={styles.sectionHeader}>
+      <Txt variant="title2" accessibilityRole="header" style={styles.fill}>
+        {title}
+      </Txt>
+      {action && onAction && (
+        <Pressable onPress={onAction} accessibilityRole="button" hitSlop={10}>
+          <Txt variant="callout" color={colors.link}>
+            {action}
+          </Txt>
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+// Grupo de linhas num cartão, com separadores entre elas.
+export function Group({ children, footer, style }: { children: ReactNode; footer?: ReactNode; style?: StyleProp<ViewStyle> }) {
+  const rows = Children.toArray(children).filter(Boolean);
+  return (
+    <View style={[styles.groupWrap, style]}>
+      <View style={styles.group}>
+        {rows.map((row, i) => (
+          <Fragment key={i}>
+            {i > 0 && <View style={styles.separator} />}
+            {row}
+          </Fragment>
+        ))}
+      </View>
+      {typeof footer === "string" ? (
+        <Txt variant="footnote" color={colors.secondary} style={styles.groupFooter}>
+          {footer}
+        </Txt>
+      ) : (
+        footer
+      )}
+    </View>
+  );
 }
 
 type RowProps = {
   children: ReactNode;
   onPress?: () => void;
   accessibilityLabel?: string;
-  accessibilityHint?: string;
   selected?: boolean;
   role?: "button" | "radio" | "link" | "checkbox";
   style?: StyleProp<ViewStyle>;
 };
 
-export function Row({ children, onPress, accessibilityLabel, accessibilityHint, selected, role, style }: RowProps) {
-  const c = useColors();
+export function Row({ children, onPress, accessibilityLabel, selected, role, style }: RowProps) {
   if (!onPress) return <View style={[styles.row, style]}>{children}</View>;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole={role ?? "button"}
       accessibilityLabel={accessibilityLabel}
-      accessibilityHint={accessibilityHint}
       accessibilityState={
-        selected === undefined
-          ? undefined
-          : role === "radio" || role === "checkbox"
-            ? { checked: selected }
-            : { selected }
+        selected === undefined ? undefined : role === "radio" || role === "checkbox" ? { checked: selected } : { selected }
       }
-      style={({ pressed }) => [styles.row, pressed && { backgroundColor: c.pressed }, style]}
+      style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.cardRaised }, style]}
     >
       {children}
     </Pressable>
   );
 }
 
-type IconProps = {
-  name: SFSymbol;
-  // O que aparece fora do iOS (web, Android), onde não há SF Symbols.
-  fallback: string;
-  size?: number;
-  color: string;
-};
-
-export function Icon({ name, fallback, size = 22, color }: IconProps) {
-  const glyph = (
-    <Text style={{ color, fontSize: size * 0.8, lineHeight: size, width: size, textAlign: "center" }}>{fallback}</Text>
-  );
-  if (Platform.OS !== "ios") return glyph;
+// O quadradinho colorido com ícone à esquerda das linhas, como nos Ajustes.
+export function RowIcon({ name, color }: { name: IconName; color: string }) {
   return (
-    <SymbolView name={name} size={size} tintColor={color} fallback={glyph} style={{ width: size, height: size }} />
+    <View style={[styles.rowIcon, { backgroundColor: color }]}>
+      <Icon name={name} size={17} color="#FFFFFF" />
+    </View>
   );
 }
+
+// ---------- Botões ----------
 
 type ButtonProps = {
   label: string;
   onPress: () => void;
-  // prominent: a ação principal do ecrã (uma por ecrã, buttons.md › Style);
-  // bordered: secundária; plain: só texto.
-  variant?: "prominent" | "bordered" | "plain";
+  // primary: cápsula branca, a ação principal (uma por ecrã, buttons.md ›
+  // Style); secondary: cápsula escura; plain: só texto.
+  variant?: "primary" | "secondary" | "plain";
+  icon?: IconName;
   disabled?: boolean;
   accessibilityHint?: string;
 };
 
-export function Button({ label, onPress, variant = "prominent", disabled, accessibilityHint }: ButtonProps) {
-  const c = useColors();
-  const background = variant === "prominent" ? c.tint : variant === "bordered" ? c.fill : "transparent";
-  const color = variant === "prominent" ? c.onTint : c.tintText;
+export function Button({ label, onPress, variant = "primary", icon, disabled, accessibilityHint }: ButtonProps) {
+  const background = variant === "primary" ? colors.label : variant === "secondary" ? colors.cardRaised : "transparent";
+  const color = variant === "primary" ? colors.onButton : variant === "secondary" ? colors.label : colors.link;
   return (
     <Pressable
       onPress={onPress}
@@ -169,15 +235,58 @@ export function Button({ label, onPress, variant = "prominent", disabled, access
       accessibilityHint={accessibilityHint}
       style={({ pressed }) => [
         styles.button,
+        variant === "plain" && styles.buttonPlain,
         { backgroundColor: background },
-        pressed && styles.pressed,
+        pressed && { opacity: 0.75, transform: [{ scale: 0.98 }] },
         disabled && styles.disabled,
       ]}
     >
-      <Text style={[styles.buttonText, { color }]}>{label}</Text>
+      {icon && <Icon name={icon} size={17} color={color} />}
+      <Txt variant="headline" color={color}>
+        {label}
+      </Txt>
     </Pressable>
   );
 }
+
+// Botão redondo pequeno (fechar), como o ✕ das folhas do iOS.
+export function CircleButton({ icon, onPress, label, size = 30 }: { icon: IconName; onPress: () => void; label: string; size?: number }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      hitSlop={Math.max(0, (44 - size) / 2)}
+      style={({ pressed }) => [
+        styles.circleButton,
+        { width: size, height: size, borderRadius: size / 2 },
+        pressed && { opacity: 0.7 },
+      ]}
+    >
+      <Icon name={icon} size={size * 0.5} color={colors.secondary} />
+    </Pressable>
+  );
+}
+
+// ---------- Avatares ----------
+
+export function Avatar({ name, size = 56 }: { name: string; size?: number }) {
+  const initial = name.trim().charAt(0).toUpperCase();
+  return (
+    <LinearGradient
+      colors={avatarGradient(name)}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ width: size, height: size, borderRadius: size / 2, alignItems: "center", justifyContent: "center" }}
+    >
+      <Txt variant="title" color="#FFFFFF" style={{ fontSize: size * 0.42, lineHeight: size * 0.52 }}>
+        {initial}
+      </Txt>
+    </LinearGradient>
+  );
+}
+
+// ---------- Controlos ----------
 
 type SegmentedProps<T extends string> = {
   options: readonly { value: T; label: string }[];
@@ -187,9 +296,8 @@ type SegmentedProps<T extends string> = {
 };
 
 export function Segmented<T extends string>({ options, value, onChange, accessibilityLabel }: SegmentedProps<T>) {
-  const c = useColors();
   return (
-    <View accessibilityRole="radiogroup" accessibilityLabel={accessibilityLabel} style={[styles.segmented, { backgroundColor: c.fill }]}>
+    <View accessibilityRole="radiogroup" accessibilityLabel={accessibilityLabel} style={styles.segmented}>
       {options.map((o) => {
         const selected = o.value === value;
         return (
@@ -200,10 +308,10 @@ export function Segmented<T extends string>({ options, value, onChange, accessib
               onChange(o.value);
             }}
             accessibilityRole="radio"
-            accessibilityState={{ selected, checked: selected }}
-            style={[styles.segment, selected && [styles.segmentSelected, { backgroundColor: c.fillSelected }]]}
+            accessibilityState={{ checked: selected }}
+            style={[styles.segment, selected && styles.segmentSelected]}
           >
-            <Text style={[type.subhead, { color: c.label, fontWeight: selected ? "600" : "400" }]}>{o.label}</Text>
+            <Txt variant={selected ? "subheadBold" : "subhead"}>{o.label}</Txt>
           </Pressable>
         );
       })}
@@ -216,13 +324,12 @@ type StepperProps = {
   min: number;
   max: number;
   onChange: (value: number) => void;
-  label: string; // para o VoiceOver: "Impostores"
+  label: string;
 };
 
-// O stepper do iOS: − e + lado a lado. Para o VoiceOver é um único
-// "ajustável": desliza para cima ou para baixo para mudar o valor.
+// O stepper do iOS. Para o VoiceOver é um "ajustável": desliza para cima ou
+// para baixo para mudar o valor.
 export function Stepper({ value, min, max, onChange, label }: StepperProps) {
-  const c = useColors();
   const canDec = value > min;
   const canInc = value < max;
   function change(next: number) {
@@ -240,28 +347,25 @@ export function Stepper({ value, min, max, onChange, label }: StepperProps) {
         if (e.nativeEvent.actionName === "increment" && canInc) change(value + 1);
         if (e.nativeEvent.actionName === "decrement" && canDec) change(value - 1);
       }}
-      style={[styles.stepper, { backgroundColor: c.fill }]}
+      style={styles.stepper}
     >
       <Pressable onPress={() => canDec && change(value - 1)} style={[styles.stepperHalf, !canDec && styles.disabled]}>
-        <Text style={[styles.stepperGlyph, { color: c.label }]}>−</Text>
+        <Txt variant="title3">−</Txt>
       </Pressable>
-      <View style={[styles.stepperDivider, { backgroundColor: c.separator }]} />
+      <View style={styles.stepperDivider} />
       <Pressable onPress={() => canInc && change(value + 1)} style={[styles.stepperHalf, !canInc && styles.disabled]}>
-        <Text style={[styles.stepperGlyph, { color: c.label }]}>+</Text>
+        <Txt variant="title3">+</Txt>
       </Pressable>
     </View>
   );
 }
 
-type ConfirmOptions = {
-  title: string;
-  message: string;
-  confirm: string; // ação destrutiva, a vermelho
-  cancel: string;
-};
+// ---------- Ronda ----------
 
-// Pergunta antes de uma ação que não se desfaz, com Cancelar
-// (alerts.md). Na web o Alert do React Native não faz nada: usa o do browser.
+type ConfirmOptions = { title: string; message: string; confirm: string; cancel: string };
+
+// Pergunta antes de uma ação que não se desfaz, com Cancelar (alerts.md).
+// Na web o Alert do React Native não faz nada: usa o do browser.
 export function confirmDestructive({ title, message, confirm, cancel }: ConfirmOptions): Promise<boolean> {
   if (Platform.OS === "web") return Promise.resolve(window.confirm(`${title}\n\n${message}`));
   return new Promise((resolve) =>
@@ -272,66 +376,65 @@ export function confirmDestructive({ title, message, confirm, cancel }: ConfirmO
   );
 }
 
-type TopBarProps = {
-  title?: string;
-  onClose: () => void;
-  closeLabel: string;
-};
-
 // Barra de cima durante a ronda: ✕ para sair à esquerda, título ao centro.
-export function TopBar({ title, onClose, closeLabel }: TopBarProps) {
-  const c = useColors();
+export function TopBar({ title, onClose, closeLabel }: { title?: string; onClose: () => void; closeLabel: string }) {
   return (
     <View style={styles.topBar}>
-      <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel={closeLabel} hitSlop={8} style={styles.topBarButton}>
-        <Icon name="xmark" fallback="✕" size={18} color={c.secondary} />
-      </Pressable>
-      <Text style={[type.footnote, styles.topBarTitle, { color: c.secondary }]} numberOfLines={1}>
+      <CircleButton icon="close" onPress={onClose} label={closeLabel} />
+      <Txt variant="subheadBold" color={colors.secondary} align="center" numberOfLines={1} style={styles.fill}>
         {title}
-      </Text>
-      <View style={styles.topBarButton} />
+      </Txt>
+      <View style={styles.topBarSpacer} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: { flexDirection: "row", alignItems: "center", minHeight: 44 },
-  topBarButton: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  topBarTitle: { flex: 1, textAlign: "center" },
-  screen: { flex: 1 },
-  fill: { flex: 1 },
-  content: { paddingHorizontal: spacing.md, paddingBottom: spacing.md },
-  scrollContent: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
-  footer: { paddingHorizontal: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.sm, gap: spacing.sm },
-  largeTitle: { marginTop: spacing.md, marginBottom: spacing.sm, marginLeft: spacing.xs },
-  section: { marginTop: spacing.lg },
-  sectionTitle: { marginLeft: spacing.md, marginBottom: 6 },
-  sectionFooter: { marginHorizontal: spacing.md, marginTop: 6 },
-  card: { borderRadius: 12, overflow: "hidden" },
-  separator: { height: StyleSheet.hairlineWidth, marginLeft: spacing.md },
-  row: {
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 11,
+  screen: { flex: 1, backgroundColor: colors.background },
+  fill: { flex: 1, minWidth: 0 },
+  backdrop: { position: "absolute", top: 0, left: 0, right: 0 },
+  footerWrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: "hidden",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "rgba(255,255,255,0.08)",
+    backgroundColor: Platform.OS === "android" ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.35)",
+  },
+  footer: { paddingHorizontal: MARGIN, paddingTop: 12, gap: spacing.sm },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    paddingHorizontal: MARGIN,
+    marginTop: spacing.xl,
+    marginBottom: 12,
+  },
+  groupWrap: { paddingHorizontal: MARGIN },
+  group: { backgroundColor: colors.card, borderRadius: 16, overflow: "hidden" },
+  groupFooter: { marginHorizontal: spacing.md, marginTop: spacing.sm },
+  separator: { height: StyleSheet.hairlineWidth, backgroundColor: colors.separator, marginLeft: 60 },
+  row: { minHeight: 52, paddingHorizontal: spacing.md, paddingVertical: 10, flexDirection: "row", alignItems: "center", gap: 14 },
+  rowIcon: { width: 30, height: 30, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  button: {
+    minHeight: 54,
+    borderRadius: 27,
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
-  button: { minHeight: 52, borderRadius: 26, alignItems: "center", justifyContent: "center", paddingHorizontal: spacing.lg },
-  buttonText: { fontSize: 17, fontWeight: "700" },
-  pressed: { opacity: 0.7 },
+  buttonPlain: { minHeight: 44 },
   disabled: { opacity: 0.35 },
-  segmented: { flexDirection: "row", borderRadius: 9, padding: 2 },
-  segment: { flex: 1, minHeight: 32, alignItems: "center", justifyContent: "center", borderRadius: 7, paddingHorizontal: 12 },
-  segmentSelected: {
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  stepper: { flexDirection: "row", alignItems: "center", borderRadius: 9, height: 36 },
+  circleButton: { backgroundColor: colors.cardRaised, alignItems: "center", justifyContent: "center" },
+  segmented: { flexDirection: "row", borderRadius: 10, padding: 2, backgroundColor: colors.cardRaised },
+  segment: { flex: 1, minHeight: 34, alignItems: "center", justifyContent: "center", borderRadius: 8, paddingHorizontal: 12 },
+  segmentSelected: { backgroundColor: "#636366" },
+  stepper: { flexDirection: "row", alignItems: "center", borderRadius: 10, height: 36, backgroundColor: colors.cardRaised },
   stepperHalf: { width: 48, height: 36, alignItems: "center", justifyContent: "center" },
-  stepperDivider: { width: StyleSheet.hairlineWidth, height: 18 },
-  stepperGlyph: { fontSize: 22, fontWeight: "500", lineHeight: 26 },
+  stepperDivider: { width: StyleSheet.hairlineWidth, height: 18, backgroundColor: colors.fill },
+  topBar: { flexDirection: "row", alignItems: "center", minHeight: 52, paddingHorizontal: MARGIN - 4 },
+  topBarSpacer: { width: 30 },
 });
