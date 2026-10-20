@@ -62,3 +62,7 @@ Configurar ──► Ver a palavra (passa por todos) ──► Discussão ◄─
 - **Jogar outra vez** com os mesmos jogadores, num toque.
 - **Mudar jogadores** dali mesmo, sem voltar a escrever todos (juntar quem
   chegou, tirar quem saiu), e jogar.
+
+## Wireframes
+
+A cinzento, clicáveis no modo Play: https://claude.ai/artifact/2otwdfbmtxRgihEXUZYNvF
