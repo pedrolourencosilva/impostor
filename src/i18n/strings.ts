@@ -35,6 +35,20 @@ export type Strings = {
   newRound: string;
   changeSettings: string;
   playerCount: (n: number) => string;
+  addPlayer: string;
+  removePlayer: (name: string) => string;
+  nameDuplicate: (name: string) => string;
+  nameFull: (max: number) => string;
+  playerLeft: (name: string) => string;
+  undo: string;
+  round: string;
+  maxImpostorsNote: (players: number, max: number) => string;
+  categoryCount: (n: number) => string;
+  categoriesNote: string;
+  pairCount: (n: number) => string;
+  languageNote: string;
+  back: string;
+  revealProgress: (current: number, total: number) => string;
 };
 
 const pt: Strings = {
@@ -94,6 +108,21 @@ const pt: Strings = {
   newRound: "Nova ronda",
   changeSettings: "Mudar jogadores ou modo",
   playerCount: (n) => (n === 1 ? "1 jogador" : `${n} jogadores`),
+  addPlayer: "Juntar jogador",
+  removePlayer: (name) => `Remover ${name}`,
+  nameDuplicate: (name) => `Já há um jogador com o nome “${name}”.`,
+  nameFull: (max) => `Já estão ${max} jogadores, o máximo.`,
+  playerLeft: (name) => `${name} saiu do jogo`,
+  undo: "Desfazer",
+  round: "Ronda",
+  maxImpostorsNote: (players, max) =>
+    `Com ${players} jogadores, no máximo ${max === 1 ? "1 impostor" : `${max} impostores`}.`,
+  categoryCount: (n) => (n === 1 ? "1 categoria" : `${n} categorias`),
+  categoriesNote: "Escolhe uma ou mais. Sem nenhuma escolhida, entram todas.",
+  pairCount: (n) => `${n} pares`,
+  languageNote: "As palavras e a interface mudam com a língua.",
+  back: "Voltar",
+  revealProgress: (current, total) => `${current} de ${total}`,
 };
 
 const en: Strings = {
@@ -153,6 +182,21 @@ const en: Strings = {
   newRound: "New round",
   changeSettings: "Change players or mode",
   playerCount: (n) => (n === 1 ? "1 player" : `${n} players`),
+  addPlayer: "Add player",
+  removePlayer: (name) => `Remove ${name}`,
+  nameDuplicate: (name) => `There's already a player called “${name}”.`,
+  nameFull: (max) => `That's ${max} players, the maximum.`,
+  playerLeft: (name) => `${name} left the game`,
+  undo: "Undo",
+  round: "Round",
+  maxImpostorsNote: (players, max) =>
+    `With ${players} players, at most ${max === 1 ? "1 impostor" : `${max} impostors`}.`,
+  categoryCount: (n) => (n === 1 ? "1 category" : `${n} categories`),
+  categoriesNote: "Pick one or more. With none picked, all of them are used.",
+  pairCount: (n) => `${n} pairs`,
+  languageNote: "The words and the interface follow the language.",
+  back: "Back",
+  revealProgress: (current, total) => `${current} of ${total}`,
 };
 
 export const STRINGS: Record<Lang, Strings> = { pt, en };

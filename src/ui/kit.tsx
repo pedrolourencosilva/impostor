@@ -99,7 +99,7 @@ type RowProps = {
   accessibilityLabel?: string;
   accessibilityHint?: string;
   selected?: boolean;
-  role?: "button" | "radio" | "link";
+  role?: "button" | "radio" | "link" | "checkbox";
   style?: StyleProp<ViewStyle>;
 };
 
@@ -112,7 +112,13 @@ export function Row({ children, onPress, accessibilityLabel, accessibilityHint, 
       accessibilityRole={role ?? "button"}
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
-      accessibilityState={selected === undefined ? undefined : { selected, checked: role === "radio" ? selected : undefined }}
+      accessibilityState={
+        selected === undefined
+          ? undefined
+          : role === "radio" || role === "checkbox"
+            ? { checked: selected }
+            : { selected }
+      }
       style={({ pressed }) => [styles.row, pressed && { backgroundColor: c.pressed }, style]}
     >
       {children}
