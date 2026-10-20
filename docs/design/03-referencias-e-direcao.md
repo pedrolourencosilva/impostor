@@ -63,3 +63,9 @@ Constelação, C · Essencial. **Escolhida: A · Ouro.**
   espaçamento largo #6B5A3E.
 - Letras: Cinzel (rótulos e títulos curtos), Fraunces (palavras e nomes),
   Inter (texto corrido e botões).
+
+## Passo 6: todos os ecrãs no estilo Ouro
+
+https://claude.ai/artifact/EhxSGyu7bFHToHL8US6EUm — 11 quadros, clicáveis no Play.
+Jogadores aparecem como medalhão dourado com a inicial. Textos sem artigo antes
+do nome ("Bruno era", não "O Bruno era"): a app não sabe o género de ninguém.
