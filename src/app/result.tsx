@@ -2,11 +2,12 @@ import { Redirect, router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 import { useGame } from "@/game/GameContext";
-import { Button, Screen } from "@/ui/components";
-import { colors, spacing } from "@/ui/theme";
+import { Button, Icon, Row, Screen, Section } from "@/ui/kit";
+import { spacing, type, useColors } from "@/ui/theme";
 
 export default function Result() {
   const { round, t, newRound } = useGame();
+  const c = useColors();
 
   if (!round) return <Redirect href="/" />;
 
@@ -17,42 +18,50 @@ export default function Result() {
     router.replace("/reveal");
   }
 
+  const footer = (
+    <>
+      <Button label={t.newRound} onPress={playAgain} />
+      <Button label={t.changeSettings} variant="plain" onPress={() => router.dismissAll()} />
+    </>
+  );
+
   return (
-    <Screen>
-      <View style={styles.center}>
-        <Text style={styles.label}>{t.revealTitle(impostors.length)}</Text>
-        <Text style={styles.impostors}>{impostors.join(", ")}</Text>
-
-        <View style={styles.block}>
-          <Text style={styles.label}>{t.theWordWas}</Text>
-          <Text style={styles.word}>{round.civilWord}</Text>
-        </View>
-
-        {round.mode !== "classic" && (
-          <View style={styles.block}>
-            <Text style={styles.label}>
-              {round.mode === "undercover" ? t.impostorHad : t.impostorHint}
-            </Text>
-            <Text style={[styles.word, { color: colors.accent }]}>{round.otherWord}</Text>
-          </View>
-        )}
-
-        <Text style={styles.category}>
-          {t.category}: {round.category}
+    <Screen scroll footer={footer}>
+      <View style={styles.hero}>
+        <Icon name="theatermasks.fill" fallback="🎭" size={52} color={c.danger} />
+        <Text style={[type.title2, styles.centerText, { color: c.secondary, fontWeight: "400" }]}>
+          {t.revealTitle(impostors.length)}
+        </Text>
+        <Text style={[styles.impostors, { color: c.danger }]} adjustsFontSizeToFit numberOfLines={3}>
+          {impostors.join(", ")}
         </Text>
       </View>
 
-      <Button label={t.newRound} onPress={playAgain} />
-      <Button label={t.changeSettings} variant="secondary" onPress={() => router.dismissAll()} />
+      <Section>
+        <Row>
+          <Text style={[type.body, styles.grow, { color: c.label }]}>{t.theWordWas}</Text>
+          <Text style={[type.headline, { color: c.label }]}>{round.civilWord}</Text>
+        </Row>
+        {round.mode !== "classic" && (
+          <Row>
+            <Text style={[type.body, styles.grow, { color: c.label }]}>
+              {round.mode === "undercover" ? t.impostorHad : t.impostorHint}
+            </Text>
+            <Text style={[type.headline, { color: c.danger }]}>{round.otherWord}</Text>
+          </Row>
+        )}
+        <Row>
+          <Text style={[type.body, styles.grow, { color: c.label }]}>{t.category}</Text>
+          <Text style={[type.body, { color: c.secondary }]}>{round.category}</Text>
+        </Row>
+      </Section>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: spacing.lg },
-  label: { color: colors.muted, fontSize: 18, textAlign: "center" },
-  impostors: { color: colors.accent, fontSize: 38, fontWeight: "900", textAlign: "center" },
-  block: { alignItems: "center", gap: spacing.xs },
-  word: { color: colors.civil, fontSize: 30, fontWeight: "800", textAlign: "center" },
-  category: { color: colors.muted, fontSize: 15 },
+  hero: { alignItems: "center", gap: spacing.sm, marginTop: spacing.xl },
+  centerText: { textAlign: "center" },
+  impostors: { fontSize: 40, fontWeight: "800", textAlign: "center" },
+  grow: { flex: 1, minWidth: 0 },
 });
