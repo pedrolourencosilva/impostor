@@ -95,3 +95,23 @@ procurar a palavra). Chifres e sombras genéricas foram rejeitados.
 **Fundo: por decidir.** Rejeitados: só cor (azul, vinho, joias), ecrã =
 carta colorida, objetos espalhados, redemoinho tipo Balatro, raios retro.
 Disse que Secret Hitler e Balatro "não são maus"; à espera de exemplos.
+
+## Direção final: Ardósia (2026-10-21)
+
+Fluxo completo, 11 ecrãs ligados entre si:
+https://claude.ai/artifact/PvGntYZXAs5mkEwpPjE8Q1 (as explorações ficaram no
+canvas do passo 6).
+
+- **Fundo:** uma só cor, ardósia #2E4657, com manchas de luz suaves, foco de
+  luz atrás da figura e cantos mais escuros. Nas margens: olhos amarelos a
+  espreitar (pestanejam; param com "Reduzir movimento"), "?", balões de
+  segredo, passinhos e brilhos. Máscaras no fundo: rejeitadas.
+- **Texto e botões** creme #F6EDDF (8,5:1 sobre a ardósia); botão principal
+  creme com texto escuro.
+- **Verso da carta:** o desenho dourado do Ouro, em azul-noite.
+- **Frente da carta:** sorteada entre seis (I–VI: Olho, Leitor, Orador,
+  Fechadura, Sussurro, Lua), cada uma com a sua cor forte. **A palavra fica ao
+  centro** e os pormenores à volta, pequenos; a figura num medalhão em arco.
+  O sorteio nunca depende do papel; a composição é igual em todas.
+- **Figuras novas:** Era civil = inocente de mãos no ar com dedos a
+  apontar-lhe; Falhou = a impostora a pôr a máscara à pressa, torta.
