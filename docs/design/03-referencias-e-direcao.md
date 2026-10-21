@@ -113,7 +113,10 @@ canvas do passo 6).
   Fechadura, Sussurro, Lua), cada uma com a sua cor forte. **A palavra fica ao
   centro** e os pormenores à volta, pequenos; a figura num medalhão em arco.
   O sorteio nunca depende do papel; a composição é igual em todas.
-  Carta de 240 × 420 (proporção de tarot), com a cor da frente suavizada
-  com a ardósia (55 %; a mostarda só 30 %, para o texto escuro manter 5:1).
+  **A frente e o verso são a mesma carta**: mesmo tamanho (280 × 430), mesma
+  posição no ecrã e mesma forma (cantos e moldura), para a carta não saltar
+  ao virar. Os ecrãs 3, 4a e 4b têm a mesma estrutura (barra, cabeçalho de
+  86 px, carta ao centro, botão de 54 px). Cor da frente suavizada com a
+  ardósia (55 %; a mostarda só 30 %, para o texto escuro manter 5:1).
 - **Figuras novas:** Era civil = inocente de mãos no ar com dedos a
   apontar-lhe; Falhou = a impostora a pôr a máscara à pressa, torta.
