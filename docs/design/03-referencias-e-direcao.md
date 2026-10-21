@@ -69,3 +69,29 @@ Constelação, C · Essencial. **Escolhida: A · Ouro.**
 https://claude.ai/artifact/EhxSGyu7bFHToHL8US6EUm — 11 quadros, clicáveis no Play.
 Jogadores aparecem como medalhão dourado com a inicial. Textos sem artigo antes
 do nome ("Bruno era", não "O Bruno era"): a app não sabe o género de ninguém.
+
+## Revisão do Ouro (2026-10-21): mais brincadeira
+
+Achou os ecrãs Ouro escuros demais e "secantes". Quer que a app passe o
+sentimento das cartas da referência: a frente das cartas 1 e 3 é
+brincalhona (personagens com graça, cores vivas no escuro); o verso e o
+fundo preto são o mistério. Não quer a app em forma de carta nem o fundo
+escuro liso. Explorações no mesmo canvas (passo 6), da fila "Mais cor"
+para baixo.
+
+**Figuras (decidido):** estilo plano e geométrico, paleta da referência
+(verde #4E7A5E, laranja #E2602F, lavanda #B9A0D6, violeta #5B3FD9,
+mostarda #EBA82A, creme #EEE8DE). Cada figura tem um pormenor sinistro, e
+**esse pormenor tem de vir do tema do jogo** (mentir, esconder quem se é,
+procurar a palavra). Chifres e sombras genéricas foram rejeitados.
+
+- O Leitor: espia por dois buracos no jornal; manchete "???"; a sombra na
+  parede deixa passar a luz pelos buracos.
+- O Orador (opção B): do megafone sai um rabisco emaranhado e um "?",
+  e ele transpira: está a inventar a pista.
+- O Impostor: tirou a máscara sorridente; por baixo, olhos vazios e um
+  sorriso fino demais.
+
+**Fundo: por decidir.** Rejeitados: só cor (azul, vinho, joias), ecrã =
+carta colorida, objetos espalhados, redemoinho tipo Balatro, raios retro.
+Disse que Secret Hitler e Balatro "não são maus"; à espera de exemplos.
